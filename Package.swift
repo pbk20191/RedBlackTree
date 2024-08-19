@@ -1,4 +1,4 @@
-//
+// swift-tools-version:4.2
 //  Package.swift
 //  RedBlackTree
 //
@@ -10,5 +10,9 @@ import PackageDescription
 
 let package = Package(
     name: "RedBlackTree",
-    dependencies: []
+    dependencies: [],
+    targets: [
+        .target(name: "RedBlackTree"),
+        .testTarget(name: "RedBlackTreeTests", dependencies: ["RedBlackTree"])
+    ]
 )

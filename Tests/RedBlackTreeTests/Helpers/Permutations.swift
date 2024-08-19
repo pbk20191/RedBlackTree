@@ -10,7 +10,7 @@ import Foundation
 
 /// Generates all permutations of length `count`.
 /// - Returns: a generator that produces arrays of integers in range `0..<count`, in all possible order.
-func generatePermutations(count: Int) -> AnyIterator<[Int]> {
+func generatePermutations(_ count: Int) -> AnyIterator<[Int]> {
     if count == 0 {
         return AnyIterator(EmptyCollection<[Int]>().makeIterator())
     }
@@ -37,7 +37,7 @@ func generatePermutations(count: Int) -> AnyIterator<[Int]> {
 }
 
 /// Generates all inversion vectors of length `count`. The vectors returned all have an extra '0' element prepended for convenience.
-func generateInversions(count: Int) -> AnyIterator<[Int]> {
+func generateInversions(_ count: Int) -> AnyIterator<[Int]> {
     if count == 0 {
         return AnyIterator(EmptyCollection<[Int]>().makeIterator())
     }

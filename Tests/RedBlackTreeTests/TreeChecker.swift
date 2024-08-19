@@ -31,7 +31,7 @@ struct RedBlackInfo<Key: RedBlackInsertionKey, Payload> {
 
     var defects: [(Handle, String, FileString, UInt)] = []
 
-    mutating func addDefect(handle: Handle, _ description: String, file: FileString = #file, line: UInt = #line) {
+    mutating func addDefect(_ handle: Handle, _ description: String, file: FileString = #file, line: UInt = #line) {
         defects.append((handle, description, file, line))
     }
 }
@@ -39,7 +39,7 @@ struct RedBlackInfo<Key: RedBlackInsertionKey, Payload> {
 extension RedBlackTree {
     typealias Info = RedBlackInfo<InsertionKey, Payload>
 
-    private func collectInfo(blacklist: Set<Handle>, handle: Handle?, parent: Handle?, prefix: Summary) -> Info {
+    private func collectInfo(_ blacklist: Set<Handle>, handle: Handle?, parent: Handle?, prefix: Summary) -> Info {
 
         guard let handle = handle else { return Info() }
 
@@ -90,10 +90,10 @@ extension RedBlackTree {
         let key = InsertionKey(summary: prefix + li.summary, head: node.head)
         info.maxKey = ri.maxKey
         info.minKey = li.minKey
-        if let lk = li.maxKey where lk > key {
+        if let lk = li.maxKey, lk > key {
             info.addDefect(handle, "node's key is ordered before its maximum left descendant: \(key) < \(lk)")
         }
-        if let rk = ri.minKey where rk < key {
+        if let rk = ri.minKey, rk < key {
             info.addDefect(handle, "node's key is ordered after its minimum right descendant: \(key) > \(rk)")
         }
         return info

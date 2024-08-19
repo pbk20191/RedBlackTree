@@ -41,10 +41,10 @@ public struct TestSummary<Key: Comparable>: SummaryProtocol, CustomStringConvert
         self.count = 1
     }
     public init(_ a: TestSummary<Key>, _ b: TestSummary<Key>) {
-        if let amin = a.min, bmin = b.min where amin > bmin {
+        if let amin = a.min, let bmin = b.min, amin > bmin {
             XCTFail("Out of order summation: \(a) + \(b)")
         }
-        if let amax = a.max, bmax = b.max where amax > bmax {
+        if let amax = a.max, let bmax = b.max, amax > bmax {
             XCTFail("Out of order summation: \(a) + \(b)")
         }
 
@@ -74,9 +74,9 @@ public struct TestSummary<Key: Comparable>: SummaryProtocol, CustomStringConvert
         self.count = a.count + b.count
     }
 
-    public func dump(item: Key?) -> String {
+    public func dump(_ item: Key?) -> String {
         if let item = item {
-            return String(item)
+            return "\(item)"
         }
         else {
             return "nil"
@@ -84,7 +84,7 @@ public struct TestSummary<Key: Comparable>: SummaryProtocol, CustomStringConvert
     }
 
     public var description: String {
-        return "(min: \(dump(min)), max: \(dump(max)), weight: \(weight), count: \(count))"
+        return "(min: \(self.dump(min)), max: \(self.dump(max)), weight: \(weight), count: \(count))"
     }
 }
 public func ==<Item: Comparable>(a: TestSummary<Item>, b: TestSummary<Item>) -> Bool {
@@ -99,7 +99,7 @@ internal struct ByKey<K: Comparable>: RedBlackInsertionKey, CustomStringConverti
 
     internal init(_ key: K) { self.key = key }
     internal init(summary: Summary, head: Head) {
-        if summary.max > head.key {
+        if let max = summary.max, max > head.key {
             XCTFail("Invalid summary: \(summary) should is not before \(head)")
         }
         self.key = head.key
@@ -127,7 +127,7 @@ internal struct ByIndex<Key: Comparable>: RedBlackKey {
     }
 
     internal init(summary: Summary, head: Head) {
-        if summary.max > head.key {
+        if let max = summary.max, max > head.key {
             XCTFail("Invalid summary: \(summary) should is not before \(head)")
         }
         self.index = summary.count
@@ -146,7 +146,7 @@ internal struct ByIndexRange<Key: Comparable>: RedBlackKey {
     internal init(summary: Summary, head: Head) { self.range = summary.count ..< summary.count + 1 }
 }
 internal func ==<Key: Comparable>(a: ByIndexRange<Key>, b: ByIndexRange<Key>) -> Bool {
-    return a.range.intersects(b.range)
+    return a.range.intersects(range: b.range)
 }
 internal func < <Key: Comparable>(a: ByIndexRange<Key>, b: ByIndexRange<Key>) -> Bool {
     return a.range.endIndex <= b.range.startIndex
@@ -162,7 +162,7 @@ internal struct ByWeightIndex<Key: Comparable>: RedBlackKey {
     internal init(summary: Summary, head: Head) { self.weightIndexRange = summary.weight ..< summary.weight + head.weight }
 }
 internal func ==<Key: Comparable>(a: ByWeightIndex<Key>, b: ByWeightIndex<Key>) -> Bool {
-    return a.weightIndexRange.intersects(b.weightIndexRange)
+    return a.weightIndexRange.intersects(range: b.weightIndexRange)
 }
 internal func < <Key: Comparable>(a: ByWeightIndex<Key>, b: ByWeightIndex<Key>) -> Bool {
     return a.weightIndexRange.endIndex <= b.weightIndexRange.startIndex
@@ -284,7 +284,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
     }
 
     func testPayloadAt() {
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
         let payloads = handles.map { tree.payloadAt($0) }
         XCTAssertEqual(payloads, ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"])
     }
@@ -313,28 +313,28 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
     }
 
     func testKeyAt() {
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
         let keys = handles.map { tree.keyAt($0) }
         XCTAssertEqual(keys, [Key(1), Key(2), Key(3), Key(4), Key(5), Key(6), Key(7), Key(8), Key(9), Key(10)])
     }
 
     func testElementAt() {
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
         let expectedElements = [(Key(1), "one"), (Key(2), "two"), (Key(3), "three"), (Key(4), "four"), (Key(5), "five"), (Key(6), "six"), (Key(7), "seven"), (Key(8), "eight"), (Key(9), "nine"), (Key(10), "ten")]
 
         let elements = handles.map { tree.elementAt($0) }
-        XCTAssertTrue(elements.elementsEqual(expectedElements, isEquivalent: { e1, e2 in e1.0 == e2.0 && e1.1 == e2.1 }))
+        XCTAssertTrue(elements.elementsEqual(expectedElements, by: { e1, e2 in e1.0 == e2.0 && e1.1 == e2.1 }))
     }
 
     func testHeadAt() {
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
         let expectedHeadKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         let heads = handles.map { tree.headAt($0) }
         XCTAssertEqual(heads.map { $0.key }, expectedHeadKeys)
     }
 
     func testSuccessor() {
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
 
         var next: TestTree.Handle? = nil
         for handle in handles.reversed() {
@@ -344,7 +344,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
     }
 
     func testPredecessor() {
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
 
         var previous: TestTree.Handle? = nil
         for handle in handles {
@@ -354,7 +354,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
     }
 
     func testStep() {
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
 
         for handle in handles {
             XCTAssertEqual(tree.step(handle, toward: .Left), tree.predecessor(handle))
@@ -365,7 +365,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
     func testHandleOfLeftmostNodeUnder() {
         XCTAssertEqual(tree.leftmostUnder(tree.root!), tree.leftmost)
 
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
 
         for handle in handles {
             let key = tree.keyAt(handle)
@@ -379,7 +379,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
     func testHandleOfRightmostNodeUnder() {
         XCTAssertEqual(tree.rightmostUnder(tree.root!), tree.rightmost)
 
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
 
         for handle in handles {
             let key = tree.keyAt(handle)
@@ -391,7 +391,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
     }
 
     func testFurthestNodeUnder() {
-        let handles = (1...10).flatMap { tree.find(Key($0)) }
+        let handles = (1...10).compactMap { tree.find(Key($0)) }
 
         for handle in handles {
             let min = tree.leftmostUnder(handle)
@@ -410,7 +410,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
             elements.append(element)
         }
 
-        XCTAssertTrue(expectedElements.elementsEqual(elements, isEquivalent: { e1, e2 in e1.0 == e2.0 && e1.1 == e2.1 }))
+        XCTAssertTrue(expectedElements.elementsEqual(elements, by: { e1, e2 in e1.0 == e2.0 && e1.1 == e2.1 }))
     }
 
     func testSequenceType() {
@@ -421,7 +421,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
             elements.append(element)
         }
 
-        XCTAssertTrue(expectedElements.elementsEqual(elements, isEquivalent: { e1, e2 in e1.0 == e2.0 && e1.1 == e2.1 }))
+        XCTAssertTrue(expectedElements.elementsEqual(elements, by: { e1, e2 in e1.0 == e2.0 && e1.1 == e2.1 }))
     }
 
     func testGenerateFrom() {
@@ -435,7 +435,7 @@ class RedBlackTreeSimpleQueryTests: XCTestCase {
                 elements.append(e)
             }
 
-            XCTAssertTrue(expectedElements[i-1...9].elementsEqual(elements, isEquivalent: { e1, e2 in e1.0 == e2.0 && e1.1 == e2.1 }))
+            XCTAssertTrue(expectedElements[i-1...9].elementsEqual(elements, by: { e1, e2 in e1.0 == e2.0 && e1.1 == e2.1 }))
         }
     }
 

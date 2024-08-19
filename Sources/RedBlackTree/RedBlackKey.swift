@@ -23,7 +23,7 @@ public protocol RedBlackInsertionKey: RedBlackKey {
     var head: Summary.Item { get }
 }
 
-public struct StoredKey<Summary: SummaryProtocol where Summary.Item: Comparable>: RedBlackInsertionKey {
+public struct StoredKey<Summary: SummaryProtocol >: RedBlackInsertionKey where Summary.Item: Comparable {
     public typealias Head = Summary.Item
 
     public let head: Head
@@ -35,10 +35,10 @@ public struct StoredKey<Summary: SummaryProtocol where Summary.Item: Comparable>
         self.init(head)
     }
 }
-public func == <Summary: SummaryProtocol where Summary.Item: Comparable>(a: StoredKey<Summary>, b: StoredKey<Summary>) -> Bool {
+public func == <Summary: SummaryProtocol >(a: StoredKey<Summary>, b: StoredKey<Summary>) -> Bool where Summary.Item: Comparable {
     return a.head == b.head
 }
-public func < <Summary: SummaryProtocol where Summary.Item: Comparable>(a: StoredKey<Summary>, b: StoredKey<Summary>) -> Bool {
+public func < <Summary: SummaryProtocol >(a: StoredKey<Summary>, b: StoredKey<Summary>) -> Bool where Summary.Item: Comparable {
     return a.head < b.head
 }
 extension StoredKey: CustomStringConvertible {

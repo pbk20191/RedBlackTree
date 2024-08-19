@@ -11,7 +11,7 @@ import Foundation
 /// Returns a random number sampled from a uniform distribution from 0 to limit.
 /// - Returns: A number in range `0..<limit`
 func random(limit: Int) -> Int {
-    return Int(arc4random_uniform(UInt32(limit)))
+    return .random(in: 0..<limit)
 }
 
 extension Array {
@@ -26,7 +26,7 @@ extension Array {
     mutating func shuffleInPlace() {
         let count = self.count
         for i in 0..<count {
-            let j = random(count)
+            let j = random(limit: count)
             (self[i], self[j]) = (self[j], self[i])
         }
     }

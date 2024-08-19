@@ -28,16 +28,16 @@ extension RedBlackTree {
         dump(root)
     }
 
-    func dump(top: Handle?) {
+    func dump(_ top: Handle?) {
         /// - Returns: (tab level, lines), where each line is (matchkind, graphic, columns)
         func dump(handle: Handle?, prefix: Summary) -> (Int, [(LineType, String, [String])]) {
             guard let handle = handle else { return (0, []) }
 
             let node = self[handle]
-            let (leftTabs, leftLines) = dump(node.left, prefix: prefix)
+            let (leftTabs, leftLines) = dump(handle: node.left, prefix: prefix)
             
             let p = prefix + self[node.left]?.summary
-            let (rightTabs, rightLines) = dump(node.right, prefix: p + node.head)
+            let (rightTabs, rightLines) = dump(handle: node.right, prefix: p + node.head)
 
             let tabs = Swift.max(leftTabs, rightTabs)
 
@@ -97,7 +97,7 @@ extension RedBlackTree {
         guard let top = top else { print("nil"); return }
 
         let prefix = summaryBefore(self.leftmostUnder(top))
-        let data = dump(top, prefix: prefix).1
+        let data = dump(handle: top, prefix: prefix).1
         let lines = layoutColumns(data.map { $0.2 })
         let graphics = data.map { $0.1 }
 
